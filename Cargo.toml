@@ -1,0 +1,47 @@
+[package]
+name = "linksy"
+version = "0.1.0"
+edition = "2024"
+description = "A light and fast email client"
+authors = ["Linksy Developer"]
+
+[dependencies]
+# Email protocols
+imap = { version = "3.0.0-alpha.10", features = ["native-tls"], default-features = false }
+lettre = { version = "0.11", features = ["tokio1", "tokio1-native-tls", "builder", "smtp-transport"], default-features = false }
+mail-parser = "0.9"
+
+# Async runtime
+tokio = { version = "1.36", features = ["full"] }
+
+# Security
+rustls = "0.22"
+rustls-pemfile = "2.0"
+native-tls = "0.2"
+tokio-native-tls = "0.3"
+
+# Storage
+sled = "0.34"
+
+# Configuration
+config = "0.14"
+
+# UI
+tui = { package = "ratatui", version = "0.26.1" }
+crossterm = "0.27"
+
+# Serialization
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+
+# Error handling
+thiserror = "1.0"
+anyhow = "1.0"
+
+# Logging
+log = "0.4"
+env_logger = "0.11"
+
+# Filesystem
+dirs = "5.0"
+uuid = { version = "1.7", features = ["v4"] }
