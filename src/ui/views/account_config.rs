@@ -965,14 +965,10 @@ fn render_field(
     // Create spans for the field
     let mut spans = Vec::new();
     
-    // Add label
-    spans.push(Span::raw(format!("{:<width$}", label, width = label_width)));
-    
-    // Add value
-    let display_value = if editing { edit_buffer } else { value };
-    let value_style = if selected {
+    // Determine the base style for the entire line
+    let base_style = if selected {
         if editing {
-            Style::default().fg(Color::Yellow).add_modifier(Modifier::BOLD | Modifier::UNDERLINED)
+            Style::default().fg(Color::Yellow).add_modifier(Modifier::BOLD)
         } else {
             Style::default().fg(Color::Yellow).add_modifier(Modifier::BOLD)
         }
@@ -980,11 +976,25 @@ fn render_field(
         Style::default()
     };
     
+    // Add label with the appropriate style
+    spans.push(Span::styled(
+        format!("{:<width$}", label, width = label_width),
+        base_style
+    ));
+    
+    // Add value with additional underline if editing
+    let display_value = if editing { edit_buffer } else { value };
+    let value_style = if selected && editing {
+        base_style.add_modifier(Modifier::UNDERLINED)
+    } else {
+        base_style
+    };
+    
     spans.push(Span::styled(display_value, value_style));
     
-    // Add error if present
+    // Add error if present (always in red regardless of selection)
     if let Some(error_msg) = error {
-        spans.push(Span::raw(" "));
+        spans.push(Span::styled(" ", base_style));
         spans.push(Span::styled(format!("({})", error_msg), Style::default().fg(Color::Red)));
     }
     
