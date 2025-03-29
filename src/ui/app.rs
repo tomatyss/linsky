@@ -51,6 +51,8 @@ pub struct App {
     status_message: Option<String>,
     /// Base directory for configuration and storage
     base_dir: PathBuf,
+    /// Email body scroll offset
+    email_scroll_offset: u16,
 }
 
 /// Represents the different views in the application.
@@ -109,6 +111,7 @@ impl App {
             current_view: View::Accounts,
             status_message: None,
             base_dir,
+            email_scroll_offset: 0,
         })
     }
     
@@ -601,6 +604,41 @@ impl App {
             KeyCode::Esc => {
                 // Go back to emails view
                 self.current_view = View::Emails;
+                // Reset scroll position
+                self.email_scroll_offset = 0;
+            },
+            KeyCode::Up => {
+                // Scroll up
+                if self.email_scroll_offset > 0 {
+                    self.email_scroll_offset -= 1;
+                }
+            },
+            KeyCode::Down => {
+                // Scroll down
+                self.email_scroll_offset += 1;
+                // The render function will handle clamping to max scroll
+            },
+            KeyCode::PageUp => {
+                // Scroll up by a page
+                if self.email_scroll_offset >= 10 {
+                    self.email_scroll_offset -= 10;
+                } else {
+                    self.email_scroll_offset = 0;
+                }
+            },
+            KeyCode::PageDown => {
+                // Scroll down by a page
+                self.email_scroll_offset += 10;
+                // The render function will handle clamping to max scroll
+            },
+            KeyCode::Home => {
+                // Scroll to top
+                self.email_scroll_offset = 0;
+            },
+            KeyCode::End => {
+                // Scroll to bottom - we'll set a large value and let the render function clamp it
+                self.email_scroll_offset = u16::MAX / 2;
+                // The render function will handle clamping to max scroll
             },
             KeyCode::Char('r') => {
                 // Reply to email
@@ -821,49 +859,7 @@ impl App {
     /// - `area`: The area to draw in
     fn draw_email_detail(&self, f: &mut Frame, area: Rect) {
         if let Some(email) = &self.viewed_email {
-            let chunks = Layout::default()
-                .direction(Direction::Vertical)
-                .constraints([
-                    Constraint::Length(3),  // Header
-                    Constraint::Min(0),     // Body
-                ].as_ref())
-                .split(area);
-                
-            // Draw header
-            let from = format!("From: {}", if let Some(name) = &email.from_name {
-                format!("{} <{}>", name, email.from)
-            } else {
-                email.from.clone()
-            });
-            
-            let to = format!("To: {}", email.to.join(", "));
-            let subject = format!("Subject: {}", email.subject);
-            
-            let header_text = vec![
-                from,
-                to,
-                subject,
-            ].join("\n");
-            
-            let header = Paragraph::new(header_text)
-                .block(Block::default().borders(Borders::ALL).title("Email"));
-            
-            f.render_widget(header, chunks[0]);
-            
-            // Draw body
-            let body_text = if let Some(text) = &email.body_text {
-                text.clone()
-            } else if let Some(html) = &email.body_html {
-                // TODO: Implement HTML to text conversion
-                format!("HTML email: {}", html)
-            } else {
-                "No content".to_string()
-            };
-            
-            let body = Paragraph::new(body_text)
-                .block(Block::default().borders(Borders::ALL).title("Body"));
-                
-            f.render_widget(body, chunks[1]);
+            crate::ui::views::render_email_detail(f, area, email, self.email_scroll_offset);
         }
     }
     
@@ -906,7 +902,7 @@ impl App {
                 View::Accounts => "Accounts - [a]dd, [d]elete, [Enter] select".to_string(),
                 View::Folders => "Folders - [Enter] select, [Esc] back".to_string(),
                 View::Emails => "Emails - [c]ompose, [r]eply, [f]orward, [d]elete, [Enter] view, [Esc] back".to_string(),
-                View::EmailDetail => "Email - [r]eply, [f]orward, [d]elete, [Esc] back".to_string(),
+                View::EmailDetail => "Email - [↑/↓] scroll, [PgUp/PgDn] page scroll, [Home/End] top/bottom, [r]eply, [f]orward, [d]elete, [Esc] back".to_string(),
                 View::ComposeEmail => "Compose - [Ctrl+s] send, [Esc] cancel".to_string(),
                 View::Settings => "Settings - [Esc] back".to_string(),
             }

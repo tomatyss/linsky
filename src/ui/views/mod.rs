@@ -114,10 +114,12 @@ pub fn render_emails(
 /// - `f`: The frame to render on
 /// - `area`: The area to render in
 /// - `email`: The email to display
+/// - `scroll_offset`: The vertical scroll offset for the email body
 pub fn render_email_detail(
     f: &mut Frame,
     area: Rect,
     email: &Email,
+    scroll_offset: u16,
 ) {
     let chunks = Layout::default()
         .direction(Direction::Vertical)
@@ -148,20 +150,161 @@ pub fn render_email_detail(
     
     f.render_widget(header, chunks[0]);
     
-    // Draw body
+    // Process and draw body
     let body_text = if let Some(text) = &email.body_text {
-        text.clone()
+        format_plain_text(text)
     } else if let Some(html) = &email.body_html {
-        // TODO: Implement HTML to text conversion
-        format!("HTML email: {}", html)
+        convert_html_to_text(html)
     } else {
         "No content".to_string()
     };
     
+    // Create a scrollable paragraph for the body
     let body = Paragraph::new(body_text)
-        .block(Block::default().borders(Borders::ALL).title("Body"));
+        .block(Block::default().borders(Borders::ALL).title("Body"))
+        .scroll((scroll_offset, 0))
+        .wrap(tui::widgets::Wrap { trim: false });
         
     f.render_widget(body, chunks[1]);
+    
+    // Draw scroll indicator if needed
+    let body_height = chunks[1].height as usize - 2; // Account for borders
+    let lines: Vec<&str> = body_text.lines().collect();
+    
+    if lines.len() > body_height {
+        let scroll_indicator = format!("(Scroll: {}/{})", 
+            scroll_offset.saturating_add(1), 
+            lines.len().saturating_sub(body_height).saturating_add(1)
+        );
+        
+        let scroll_text = Paragraph::new(scroll_indicator)
+            .style(Style::default().fg(Color::Gray));
+            
+        let scroll_area = Rect::new(
+            chunks[1].x + chunks[1].width - scroll_indicator.len() as u16 - 2,
+            chunks[1].y + chunks[1].height - 1,
+            scroll_indicator.len() as u16,
+            1
+        );
+        
+        f.render_widget(scroll_text, scroll_area);
+    }
+}
+
+/// Formats plain text for better display.
+///
+/// # Parameters
+/// - `text`: The plain text to format
+///
+/// # Returns
+/// Formatted text with proper line breaks and spacing
+fn format_plain_text(text: &str) -> String {
+    // Normalize line endings
+    let text = text.replace("\r\n", "\n");
+    
+    // Remove excessive blank lines (more than 2 consecutive)
+    let mut result = String::new();
+    let mut blank_line_count = 0;
+    
+    for line in text.lines() {
+        let trimmed = line.trim();
+        if trimmed.is_empty() {
+            blank_line_count += 1;
+            if blank_line_count <= 2 {
+                result.push_str("\n");
+            }
+        } else {
+            blank_line_count = 0;
+            result.push_str(line);
+            result.push('\n');
+        }
+    }
+    
+    result
+}
+
+/// Converts HTML to plain text.
+///
+/// # Parameters
+/// - `html`: The HTML content to convert
+///
+/// # Returns
+/// Plain text representation of the HTML content
+fn convert_html_to_text(html: &str) -> String {
+    // This is a basic implementation - a more robust solution would use a proper HTML parser
+    
+    // Replace common HTML entities
+    let text = html
+        .replace("&nbsp;", " ")
+        .replace("&amp;", "&")
+        .replace("&lt;", "<")
+        .replace("&gt;", ">")
+        .replace("&quot;", "\"")
+        .replace("&apos;", "'");
+    
+    // Replace common block elements with line breaks
+    let text = text
+        .replace("<br>", "\n")
+        .replace("<br/>", "\n")
+        .replace("<br />", "\n")
+        .replace("<p>", "\n")
+        .replace("</p>", "\n")
+        .replace("<div>", "\n")
+        .replace("</div>", "\n")
+        .replace("<tr>", "\n")
+        .replace("</tr>", "\n")
+        .replace("<li>", "\n- ")
+        .replace("</li>", "");
+    
+    // Remove all other HTML tags
+    let mut result = String::new();
+    let mut in_tag = false;
+    
+    for c in text.chars() {
+        if c == '<' {
+            in_tag = true;
+        } else if c == '>' {
+            in_tag = false;
+        } else if !in_tag {
+            result.push(c);
+        }
+    }
+    
+    // Normalize whitespace
+    let mut formatted = String::new();
+    let mut last_was_whitespace = false;
+    
+    for c in result.chars() {
+        if c.is_whitespace() {
+            if !last_was_whitespace || c == '\n' {
+                formatted.push(c);
+            }
+            last_was_whitespace = true;
+        } else {
+            formatted.push(c);
+            last_was_whitespace = false;
+        }
+    }
+    
+    // Remove excessive blank lines
+    let mut final_result = String::new();
+    let mut blank_line_count = 0;
+    
+    for line in formatted.lines() {
+        let trimmed = line.trim();
+        if trimmed.is_empty() {
+            blank_line_count += 1;
+            if blank_line_count <= 2 {
+                final_result.push_str("\n");
+            }
+        } else {
+            blank_line_count = 0;
+            final_result.push_str(trimmed);
+            final_result.push('\n');
+        }
+    }
+    
+    final_result
 }
 
 /// Renders the compose email view.
