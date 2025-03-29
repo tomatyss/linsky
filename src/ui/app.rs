@@ -5,6 +5,7 @@ use crate::models::{Account, ConnectionStatus, Email};
 use crate::protocols::{ImapClient, Pop3Client, SmtpClient};
 use crate::storage::EmailStorage;
 use crate::ui::{init_terminal, restore_terminal, wait_for_key, is_key_with_modifier};
+use crate::ui::views::account_config::AccountFormState;
 use anyhow::{anyhow, Result};
 use crossterm::event::{KeyCode, KeyModifiers};
 use log::error;
@@ -54,6 +55,8 @@ pub struct App {
     base_dir: PathBuf,
     /// Email body scroll offset
     email_scroll_offset: u16,
+    /// Account configuration form state
+    account_form_state: Option<AccountFormState>,
 }
 
 /// Represents the different views in the application.
@@ -72,6 +75,8 @@ pub enum View {
     /// Settings view
     #[allow(dead_code)]
     Settings,
+    /// Account configuration view
+    AccountConfig,
 }
 
 impl App {
@@ -114,6 +119,7 @@ impl App {
             status_message: None,
             base_dir,
             email_scroll_offset: 0,
+            account_form_state: None,
         })
     }
     
@@ -417,6 +423,7 @@ impl App {
             View::EmailDetail => self.handle_email_detail_input(key).await?,
             View::ComposeEmail => self.handle_compose_email_input(key).await?,
             View::Settings => self.handle_settings_input(key).await?,
+            View::AccountConfig => self.handle_account_config_input(key).await?,
         }
         
         Ok(())
@@ -456,8 +463,17 @@ impl App {
             },
             KeyCode::Char('a') => {
                 // Add new account
-                // TODO: Implement account creation UI
-                self.set_status_message("Account creation not implemented yet".to_string());
+                self.account_form_state = Some(AccountFormState::new());
+                self.current_view = View::AccountConfig;
+            },
+            KeyCode::Char('e') => {
+                // Edit selected account
+                if let Some(index) = self.selected_account {
+                    let account = self.accounts[index].blocking_lock();
+                    let account_form_state = AccountFormState::from_account(account.config.clone());
+                    self.account_form_state = Some(account_form_state);
+                    self.current_view = View::AccountConfig;
+                }
             },
             KeyCode::Char('d') => {
                 // Delete selected account
@@ -465,6 +481,131 @@ impl App {
                 self.set_status_message("Account deletion not implemented yet".to_string());
             },
             _ => {}
+        }
+        
+        Ok(())
+    }
+    
+    /// Handles input in the account configuration view.
+    ///
+    /// # Parameters
+    /// - `key`: The key event
+    ///
+    /// # Returns
+    /// A Result indicating success or failure
+    async fn handle_account_config_input(&mut self, key: crossterm::event::KeyEvent) -> Result<()> {
+        if let Some(form_state) = &mut self.account_form_state {
+            match key.code {
+                KeyCode::Esc => {
+                    if form_state.editing {
+                        // Cancel editing the current field
+                        form_state.cancel_editing();
+                    } else {
+                        // Go back to accounts view
+                        self.current_view = View::Accounts;
+                        self.account_form_state = None;
+                    }
+                },
+                KeyCode::Up => {
+                    if !form_state.editing {
+                        // Move selection up
+                        form_state.select_previous_field();
+                    }
+                },
+                KeyCode::Down => {
+                    if !form_state.editing {
+                        // Move selection down
+                        form_state.select_next_field();
+                    }
+                },
+                KeyCode::Enter => {
+                    let field_name = form_state.get_selected_field_name();
+                    
+                    if field_name == "save_button" {
+                        // Validate and save account
+                        if form_state.validate() {
+                            let account_config = form_state.finalize_account();
+                            
+                            // Save account to configuration
+                            // Get a mutable reference to the config
+                            let mut config = self.config_manager.get_config_mut();
+                            
+                            // Check if this is a new account or an edit
+                            if form_state.is_new_account {
+                                // Add new account
+                                config.accounts.push(account_config.clone());
+                            } else {
+                                // Update existing account
+                                if let Some(index) = config.accounts.iter().position(|a| a.id == account_config.id) {
+                                    config.accounts[index] = account_config.clone();
+                                } else {
+                                    // Account not found, add as new
+                                    config.accounts.push(account_config.clone());
+                                }
+                            }
+                            
+                            // Save configuration
+                            if let Err(e) = self.config_manager.save_config() {
+                                self.set_status_message(format!("Failed to save account: {}", e));
+                            } else {
+                                // Reload accounts
+                                self.accounts.clear();
+                                self.imap_clients.clear();
+                                self.pop3_clients.clear();
+                                self.smtp_clients.clear();
+                                self.load_accounts().await?;
+                                
+                                // Go back to accounts view
+                                self.current_view = View::Accounts;
+                                self.account_form_state = None;
+                                
+                                self.set_status_message("Account saved successfully".to_string());
+                            }
+                        } else {
+                            self.set_status_message("Please fix validation errors".to_string());
+                        }
+                    } else if field_name == "cancel_button" {
+                        // Cancel and go back to accounts view
+                        self.current_view = View::Accounts;
+                        self.account_form_state = None;
+                    } else if field_name.ends_with("_enabled") || field_name.ends_with("_ssl") {
+                        // Toggle boolean fields
+                        form_state.toggle_boolean_field();
+                    } else {
+                        // Start/stop editing the current field
+                        if form_state.editing {
+                            form_state.stop_editing();
+                        } else {
+                            form_state.start_editing();
+                        }
+                    }
+                },
+                KeyCode::Char(c) => {
+                    if form_state.editing {
+                        // Add character to edit buffer
+                        form_state.edit_buffer.push(c);
+                    }
+                },
+                KeyCode::Backspace => {
+                    if form_state.editing {
+                        // Remove character from edit buffer
+                        form_state.edit_buffer.pop();
+                    }
+                },
+                KeyCode::Tab => {
+                    if !form_state.editing {
+                        // Move to next field
+                        form_state.select_next_field();
+                    }
+                },
+                KeyCode::BackTab => {
+                    if !form_state.editing {
+                        // Move to previous field
+                        form_state.select_previous_field();
+                    }
+                },
+                _ => {}
+            }
         }
         
         Ok(())
@@ -744,6 +885,7 @@ impl App {
             View::EmailDetail => self.draw_email_detail(f, chunks[1]),
             View::ComposeEmail => self.draw_compose_email(f, chunks[1]),
             View::Settings => self.draw_settings(f, chunks[1]),
+            View::AccountConfig => self.draw_account_config(f, chunks[1]),
         }
         
         // Draw status
@@ -891,6 +1033,17 @@ impl App {
         f.render_widget(settings, area);
     }
     
+    /// Draws the account configuration view.
+    ///
+    /// # Parameters
+    /// - `f`: The frame to draw on
+    /// - `area`: The area to render in
+    fn draw_account_config(&self, f: &mut Frame, area: Rect) {
+        if let Some(form_state) = &self.account_form_state {
+            crate::ui::views::account_config::render_account_config(f, area, form_state);
+        }
+    }
+    
     /// Draws the status bar.
     ///
     /// # Parameters
@@ -901,12 +1054,13 @@ impl App {
             message.clone()
         } else {
             match self.current_view {
-                View::Accounts => "Accounts - [a]dd, [d]elete, [Enter] select".to_string(),
+                View::Accounts => "Accounts - [a]dd, [e]dit, [d]elete, [Enter] select".to_string(),
                 View::Folders => "Folders - [Enter] select, [Esc] back".to_string(),
                 View::Emails => "Emails - [c]ompose, [r]eply, [f]orward, [d]elete, [Enter] view, [Esc] back".to_string(),
                 View::EmailDetail => "Email - [↑/↓] scroll, [PgUp/PgDn] page scroll, [Home/End] top/bottom, [r]eply, [f]orward, [d]elete, [Esc] back".to_string(),
                 View::ComposeEmail => "Compose - [Ctrl+s] send, [Esc] cancel".to_string(),
                 View::Settings => "Settings - [Esc] back".to_string(),
+                View::AccountConfig => "Account Config - [↑/↓/Tab] navigate, [Enter] edit/toggle/save, [Esc] cancel".to_string(),
             }
         };
         

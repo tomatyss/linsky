@@ -126,9 +126,21 @@ impl ConfigManager {
     ///
     /// # Returns
     /// A Result indicating success or failure
-    #[allow(dead_code)]
     pub fn save_config(&self) -> Result<()> {
         let serialized = serde_json::to_string_pretty(&self.config)?;
+        std::fs::write(&self.config_path, serialized)?;
+        Ok(())
+    }
+    
+    /// Saves a specific configuration to disk.
+    ///
+    /// # Parameters
+    /// - `config`: The configuration to save
+    ///
+    /// # Returns
+    /// A Result indicating success or failure
+    pub fn save_config_instance(&self, config: &AppConfig) -> Result<()> {
+        let serialized = serde_json::to_string_pretty(config)?;
         std::fs::write(&self.config_path, serialized)?;
         Ok(())
     }

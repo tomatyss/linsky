@@ -2,6 +2,8 @@
 //! 
 //! This module contains the different views used in the application UI.
 
+pub mod account_config;
+
 use crate::models::{Account, Email};
 use tui::{
     layout::{Constraint, Direction, Layout, Rect},
