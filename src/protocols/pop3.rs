@@ -365,6 +365,7 @@ impl Pop3Client {
     ///
     /// # Returns
     /// A Result indicating success or failure
+    #[allow(dead_code)]
     pub async fn delete_email(&self, message_number: usize) -> Result<()> {
         let connection_arc = self.connection.as_ref()
             .ok_or_else(|| anyhow!("Not connected to POP3 server"))?;
@@ -385,6 +386,7 @@ impl Pop3Client {
     ///
     /// # Returns
     /// true if connected, false otherwise
+    #[allow(dead_code)]
     pub async fn is_connected(&self) -> bool {
         let account = self.account.lock().await;
         account.pop3_status == ConnectionStatus::Connected

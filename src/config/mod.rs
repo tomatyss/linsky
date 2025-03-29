@@ -63,6 +63,7 @@ pub struct AppSettings {
 /// Configuration manager for the application.
 pub struct ConfigManager {
     config: AppConfig,
+    #[allow(dead_code)]
     config_path: String,
 }
 
@@ -125,6 +126,7 @@ impl ConfigManager {
     ///
     /// # Returns
     /// A Result indicating success or failure
+    #[allow(dead_code)]
     pub fn save_config(&self) -> Result<()> {
         let serialized = serde_json::to_string_pretty(&self.config)?;
         std::fs::write(&self.config_path, serialized)?;
@@ -143,6 +145,7 @@ impl ConfigManager {
     ///
     /// # Returns
     /// A mutable reference to the AppConfig
+    #[allow(dead_code)]
     pub fn get_config_mut(&mut self) -> &mut AppConfig {
         &mut self.config
     }
@@ -154,6 +157,7 @@ impl ConfigManager {
     ///
     /// # Returns
     /// A Result indicating success or failure
+    #[allow(dead_code)]
     pub fn add_account(&mut self, account: EmailAccount) -> Result<()> {
         // Check if account with same ID already exists
         if self.config.accounts.iter().any(|a| a.id == account.id) {
@@ -172,6 +176,7 @@ impl ConfigManager {
     ///
     /// # Returns
     /// A Result indicating success or failure
+    #[allow(dead_code)]
     pub fn remove_account(&mut self, account_id: &str) -> Result<()> {
         let initial_len = self.config.accounts.len();
         self.config.accounts.retain(|a| a.id != account_id);

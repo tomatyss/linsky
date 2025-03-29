@@ -58,6 +58,7 @@ impl EmailStorage {
     ///
     /// # Returns
     /// A Result containing the Email or an error
+    #[allow(dead_code)]
     pub fn get_email(&self, account_id: &str, folder: &str, email_id: &str) -> Result<Option<Email>> {
         // Create a key for the email
         let key = format!("email:{}:{}:{}", account_id, folder, email_id);
@@ -108,6 +109,7 @@ impl EmailStorage {
     ///
     /// # Returns
     /// A Result indicating success or failure
+    #[allow(dead_code)]
     pub fn delete_email(&self, account_id: &str, folder: &str, email_id: &str) -> Result<()> {
         // Create a key for the email
         let key = format!("email:{}:{}:{}", account_id, folder, email_id);
@@ -138,6 +140,7 @@ impl EmailStorage {
     ///
     /// # Returns
     /// A Result indicating success or failure
+    #[allow(dead_code)]
     pub fn store_account(&self, account: &Account) -> Result<()> {
         // Create a key for the account
         let key = format!("account:{}", account.config.id);
@@ -159,6 +162,7 @@ impl EmailStorage {
     ///
     /// # Returns
     /// A Result containing the Account or an error
+    #[allow(dead_code)]
     pub fn get_account(&self, account_id: &str) -> Result<Option<Account>> {
         // Create a key for the account
         let key = format!("account:{}", account_id);
@@ -177,6 +181,7 @@ impl EmailStorage {
     ///
     /// # Returns
     /// A Result containing a vector of accounts or an error
+    #[allow(dead_code)]
     pub fn get_all_accounts(&self) -> Result<Vec<Account>> {
         // Create a prefix for the accounts
         let prefix = "account:";
@@ -200,6 +205,7 @@ impl EmailStorage {
     ///
     /// # Returns
     /// A Result indicating success or failure
+    #[allow(dead_code)]
     pub fn delete_account(&self, account_id: &str) -> Result<()> {
         // Create a key for the account
         let key = format!("account:{}", account_id);
@@ -223,6 +229,7 @@ impl EmailStorage {
     ///
     /// # Returns
     /// A Result indicating success or failure
+    #[allow(dead_code)]
     pub fn close(&self) -> Result<()> {
         self.db.flush()?;
         Ok(())

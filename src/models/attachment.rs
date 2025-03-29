@@ -16,6 +16,7 @@ pub struct Attachment {
     pub size: usize,
     /// Binary data of the attachment
     #[serde(skip)]
+    #[allow(dead_code)]
     pub data: Vec<u8>,
 }
 
@@ -27,6 +28,7 @@ impl Attachment {
     ///
     /// # Returns
     /// A Result containing the Attachment or an error
+    #[allow(dead_code)]
     pub fn from_file(path: &Path) -> anyhow::Result<Self> {
         let data = std::fs::read(path)?;
         let filename = path.file_name()
@@ -66,6 +68,7 @@ impl Attachment {
     ///
     /// # Returns
     /// A Result indicating success or failure
+    #[allow(dead_code)]
     pub fn save_to_file(&self, path: &Path) -> anyhow::Result<()> {
         std::fs::write(path, &self.data)?;
         Ok(())
@@ -75,6 +78,7 @@ impl Attachment {
     ///
     /// # Returns
     /// A string representing the attachment size in a human-readable format
+    #[allow(dead_code)]
     pub fn get_size_string(&self) -> String {
         if self.size < 1024 {
             format!("{} B", self.size)

@@ -114,6 +114,7 @@ impl SmtpClient {
     ///
     /// # Returns
     /// A Result indicating success or failure
+    #[allow(dead_code)]
     pub async fn send_email(&self, email: &Email) -> Result<()> {
         let transport = self.transport.as_ref()
             .ok_or_else(|| anyhow!("Not connected to SMTP server"))?;
@@ -276,6 +277,7 @@ impl SmtpClient {
     ///
     /// # Returns
     /// A new Email instance with default values
+    #[allow(dead_code)]
     pub async fn create_new_email(&self) -> Email {
         let account = self.account.lock().await;
         let account_id = account.config.id.clone();
@@ -294,6 +296,7 @@ impl SmtpClient {
     ///
     /// # Returns
     /// true if connected, false otherwise
+    #[allow(dead_code)]
     pub async fn is_connected(&self) -> bool {
         let account = self.account.lock().await;
         account.smtp_status == ConnectionStatus::Connected

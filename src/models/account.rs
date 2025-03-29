@@ -70,6 +70,7 @@ impl Account {
     ///
     /// # Returns
     /// A string describing the connection status
+    #[allow(dead_code)]
     pub fn get_status_summary(&self) -> String {
         let imap_status = match self.imap_status {
             ConnectionStatus::Connected => "✓",
@@ -99,6 +100,7 @@ impl Account {
     ///
     /// # Returns
     /// A string describing the unread message count
+    #[allow(dead_code)]
     pub fn get_unread_summary(&self) -> String {
         if self.unread_count > 0 {
             format!("{} unread", self.unread_count)

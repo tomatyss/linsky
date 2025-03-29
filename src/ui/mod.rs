@@ -98,6 +98,7 @@ pub fn is_key_with_modifier(key: &KeyEvent, code: KeyCode, modifiers: KeyModifie
 ///
 /// # Returns
 /// true if the key matches and has no modifiers, false otherwise
+#[allow(dead_code)]
 pub fn is_key(key: &KeyEvent, code: KeyCode) -> bool {
     key.code == code && key.modifiers == KeyModifiers::NONE
 }

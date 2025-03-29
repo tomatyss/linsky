@@ -217,6 +217,7 @@ impl ImapClient {
     ///
     /// # Returns
     /// A Result indicating success or failure
+    #[allow(dead_code)]
     pub async fn mark_as_unread(&self, mailbox: &str, email_id: &str) -> Result<()> {
         let session_arc = self.session.as_ref()
             .ok_or_else(|| anyhow!("Not connected to IMAP server"))?;
@@ -240,6 +241,7 @@ impl ImapClient {
     ///
     /// # Returns
     /// A Result indicating success or failure
+    #[allow(dead_code)]
     pub async fn flag_email(&self, mailbox: &str, email_id: &str) -> Result<()> {
         let session_arc = self.session.as_ref()
             .ok_or_else(|| anyhow!("Not connected to IMAP server"))?;
@@ -263,6 +265,7 @@ impl ImapClient {
     ///
     /// # Returns
     /// A Result indicating success or failure
+    #[allow(dead_code)]
     pub async fn unflag_email(&self, mailbox: &str, email_id: &str) -> Result<()> {
         let session_arc = self.session.as_ref()
             .ok_or_else(|| anyhow!("Not connected to IMAP server"))?;
@@ -286,6 +289,7 @@ impl ImapClient {
     ///
     /// # Returns
     /// A Result indicating success or failure
+    #[allow(dead_code)]
     pub async fn delete_email(&self, mailbox: &str, email_id: &str) -> Result<()> {
         let session_arc = self.session.as_ref()
             .ok_or_else(|| anyhow!("Not connected to IMAP server"))?;
@@ -308,6 +312,7 @@ impl ImapClient {
     ///
     /// # Returns
     /// true if connected, false otherwise
+    #[allow(dead_code)]
     pub async fn is_connected(&self) -> bool {
         let account = self.account.lock().await;
         account.imap_status == ConnectionStatus::Connected
