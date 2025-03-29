@@ -50,6 +50,7 @@ pub struct App {
     /// Status message
     status_message: Option<String>,
     /// Base directory for configuration and storage
+    #[allow(dead_code)]
     base_dir: PathBuf,
     /// Email body scroll offset
     email_scroll_offset: u16,
@@ -69,6 +70,7 @@ pub enum View {
     /// Compose email view
     ComposeEmail,
     /// Settings view
+    #[allow(dead_code)]
     Settings,
 }
 

@@ -17,6 +17,7 @@ use tui::{
 /// - `area`: The area to render in
 /// - `accounts`: The accounts to display
 /// - `selected`: The index of the selected account
+#[allow(dead_code)]
 pub fn render_accounts(
     f: &mut Frame,
     area: Rect,
@@ -47,6 +48,7 @@ pub fn render_accounts(
 /// - `area`: The area to render in
 /// - `folders`: The folders to display
 /// - `selected`: The index of the selected folder
+#[allow(dead_code)]
 pub fn render_folders(
     f: &mut Frame,
     area: Rect,
@@ -77,6 +79,7 @@ pub fn render_folders(
 /// - `area`: The area to render in
 /// - `emails`: The emails to display
 /// - `selected`: The index of the selected email
+#[allow(dead_code)]
 pub fn render_emails(
     f: &mut Frame,
     area: Rect,
@@ -316,6 +319,7 @@ fn convert_html_to_text(html: &str) -> String {
 /// - `subject`: The subject
 /// - `body`: The body
 /// - `cursor_position`: The cursor position
+#[allow(dead_code)]
 pub fn render_compose_email(
     f: &mut Frame,
     area: Rect,
@@ -361,6 +365,7 @@ pub fn render_compose_email(
 /// # Parameters
 /// - `f`: The frame to render on
 /// - `area`: The area to render in
+#[allow(dead_code)]
 pub fn render_settings(
     f: &mut Frame,
     area: Rect,

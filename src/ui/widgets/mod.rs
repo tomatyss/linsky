@@ -36,6 +36,7 @@ impl<'a> EmailView<'a> {
     ///
     /// # Returns
     /// A new EmailView instance
+    #[allow(dead_code)]
     pub fn new(subject: &'a str, from: &'a str, to: &'a str, body: &'a str) -> Self {
         Self {
             subject,
@@ -54,6 +55,7 @@ impl<'a> EmailView<'a> {
     ///
     /// # Returns
     /// The modified EmailView
+    #[allow(dead_code)]
     pub fn block(mut self, block: Block<'a>) -> Self {
         self.block = Some(block);
         self
@@ -66,6 +68,7 @@ impl<'a> EmailView<'a> {
     ///
     /// # Returns
     /// The modified EmailView
+    #[allow(dead_code)]
     pub fn style(mut self, style: Style) -> Self {
         self.style = style;
         self
@@ -140,6 +143,7 @@ impl<'a> AccountInfoWidget<'a> {
     ///
     /// # Returns
     /// A new AccountInfoWidget instance
+    #[allow(dead_code)]
     pub fn new(name: &'a str, email: &'a str, status: &'a str) -> Self {
         Self {
             name,
@@ -157,6 +161,7 @@ impl<'a> AccountInfoWidget<'a> {
     ///
     /// # Returns
     /// The modified AccountInfoWidget
+    #[allow(dead_code)]
     pub fn block(mut self, block: Block<'a>) -> Self {
         self.block = Some(block);
         self
@@ -169,6 +174,7 @@ impl<'a> AccountInfoWidget<'a> {
     ///
     /// # Returns
     /// The modified AccountInfoWidget
+    #[allow(dead_code)]
     pub fn style(mut self, style: Style) -> Self {
         self.style = style;
         self
@@ -222,6 +228,7 @@ impl<'a> StatusBar<'a> {
     ///
     /// # Returns
     /// A new StatusBar instance
+    #[allow(dead_code)]
     pub fn new(message: &'a str) -> Self {
         Self {
             message,
@@ -237,6 +244,7 @@ impl<'a> StatusBar<'a> {
     ///
     /// # Returns
     /// The modified StatusBar
+    #[allow(dead_code)]
     pub fn block(mut self, block: Block<'a>) -> Self {
         self.block = Some(block);
         self
@@ -249,6 +257,7 @@ impl<'a> StatusBar<'a> {
     ///
     /// # Returns
     /// The modified StatusBar
+    #[allow(dead_code)]
     pub fn style(mut self, style: Style) -> Self {
         self.style = style;
         self
@@ -299,6 +308,7 @@ impl<'a> InputField<'a> {
     ///
     /// # Returns
     /// A new InputField instance
+    #[allow(dead_code)]
     pub fn new(label: &'a str, value: &'a str) -> Self {
         Self {
             label,
@@ -315,6 +325,7 @@ impl<'a> InputField<'a> {
     ///
     /// # Returns
     /// The modified InputField
+    #[allow(dead_code)]
     pub fn block(mut self, block: Block<'a>) -> Self {
         self.block = Some(block);
         self
@@ -327,6 +338,7 @@ impl<'a> InputField<'a> {
     ///
     /// # Returns
     /// The modified InputField
+    #[allow(dead_code)]
     pub fn style(mut self, style: Style) -> Self {
         self.style = style;
         self
