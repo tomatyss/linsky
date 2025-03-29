@@ -160,7 +160,7 @@ pub fn render_email_detail(
     };
     
     // Create a scrollable paragraph for the body
-    let body = Paragraph::new(body_text)
+    let body = Paragraph::new(body_text.clone())
         .block(Block::default().borders(Borders::ALL).title("Body"))
         .scroll((scroll_offset, 0))
         .wrap(tui::widgets::Wrap { trim: false });
@@ -177,7 +177,7 @@ pub fn render_email_detail(
             lines.len().saturating_sub(body_height).saturating_add(1)
         );
         
-        let scroll_text = Paragraph::new(scroll_indicator)
+        let scroll_text = Paragraph::new(scroll_indicator.clone())
             .style(Style::default().fg(Color::Gray));
             
         let scroll_area = Rect::new(
