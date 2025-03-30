@@ -3,6 +3,7 @@
 //! This module contains the terminal-based UI implementation using the tui crate.
 
 pub mod app;
+pub mod renderer;
 pub mod views;
 pub mod widgets;
 

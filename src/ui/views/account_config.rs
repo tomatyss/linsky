@@ -12,6 +12,7 @@ use tui::{
 };
 
 /// Represents the state of the account configuration form.
+#[derive(Clone)]
 pub struct AccountFormState {
     /// The account being configured
     pub account: EmailAccount,

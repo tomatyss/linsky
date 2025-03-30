@@ -9,7 +9,7 @@ use serde::{Deserialize, Serialize};
 use std::path::Path;
 
 /// Represents the application configuration.
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct AppConfig {
     /// Email accounts configured in the application
     pub accounts: Vec<EmailAccount>,
@@ -50,7 +50,7 @@ pub struct ServerConfig {
 }
 
 /// Represents general application settings.
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct AppSettings {
     /// Default account ID to use
     pub default_account: Option<String>,
@@ -61,6 +61,7 @@ pub struct AppSettings {
 }
 
 /// Configuration manager for the application.
+#[derive(Clone)]
 pub struct ConfigManager {
     config: AppConfig,
     #[allow(dead_code)]
