@@ -70,6 +70,9 @@ impl AppController {
         let mut state = self.state.lock().await;
         state.accounts = accounts;
         
+        // Update account summaries
+        state.update_account_summaries();
+        
         // Select first account if available
         if !state.accounts.is_empty() {
             state.selected_account = Some(0);
@@ -291,6 +294,9 @@ impl AppController {
         let mut state = self.state.lock().await;
         state.accounts = accounts;
         
+        // Update account summaries
+        state.update_account_summaries();
+        
         // Clear form state and go back to accounts view
         state.account_form_state = None;
         state.current_view = View::Accounts;
@@ -328,6 +334,9 @@ impl AppController {
             let mut state = self.state.lock().await;
             state.accounts = accounts;
             
+            // Update account summaries
+            state.update_account_summaries();
+            
             // Update selected account
             if state.accounts.is_empty() {
                 state.selected_account = None;
@@ -342,6 +351,24 @@ impl AppController {
         Ok(())
     }
     
+    /// Closes the database storage.
+    ///
+    /// # Returns
+    /// A Result indicating success or failure
+    pub async fn close_storage(&self) -> Result<()> {
+        info!("Closing database storage");
+        
+        // Close storage in app state
+        let state = self.state.lock().await;
+        state.storage.close()?;
+        
+        // Close storage in email manager
+        let email_manager = self.email_manager.lock().await;
+        email_manager.close_storage()?;
+        
+        Ok(())
+    }
+    
     /// Shuts down the application.
     ///
     /// # Returns
@@ -351,6 +378,9 @@ impl AppController {
         
         // Disconnect all clients
         self.disconnect_all_clients().await?;
+        
+        // Close database storage
+        self.close_storage().await?;
         
         // Set running state to false
         let mut state = self.state.lock().await;

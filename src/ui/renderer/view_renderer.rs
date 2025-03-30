@@ -1,6 +1,6 @@
 //! View renderer for the Linksy email client.
 
-use crate::models::{Account, Email};
+use crate::models::{AccountSummary, Email};
 use crate::ui::views;
 use anyhow::Result;
 use tui::{
@@ -35,7 +35,7 @@ impl ViewRenderer {
         &self,
         f: &mut Frame,
         area: Rect,
-        accounts: &[Account],
+        accounts: &[AccountSummary],
         selected: Option<usize>,
     ) -> Result<()> {
         views::render_accounts(f, area, accounts, selected);

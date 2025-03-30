@@ -3,17 +3,50 @@
 //! This module handles local storage and caching of emails and other data.
 
 use crate::models::{Email, Account};
-use anyhow::Result;
+use anyhow::{Result, anyhow};
+use log::{warn, info};
 use sled::Db;
 use std::path::Path;
+use std::fs;
 
 /// Represents the email storage.
+#[derive(Clone)]
 pub struct EmailStorage {
     /// The database instance
     db: Db,
 }
 
 impl EmailStorage {
+    /// Checks for and removes stale lock files.
+    ///
+    /// # Parameters
+    /// - `path`: Path to the storage directory
+    ///
+    /// # Returns
+    /// A Result indicating success or failure
+    fn check_and_remove_stale_lock_files(path: &Path) -> Result<()> {
+        let lock_path = path.join("db.lock");
+        
+        if lock_path.exists() {
+            warn!("Found potentially stale lock file at {:?}", lock_path);
+            
+            // Try to remove the lock file
+            match fs::remove_file(&lock_path) {
+                Ok(_) => {
+                    info!("Successfully removed stale lock file");
+                    Ok(())
+                },
+                Err(e) => {
+                    warn!("Failed to remove stale lock file: {}", e);
+                    Err(anyhow!("Failed to remove stale lock file: {}", e))
+                }
+            }
+        } else {
+            // No lock file found, nothing to do
+            Ok(())
+        }
+    }
+    
     /// Creates a new EmailStorage instance.
     ///
     /// # Parameters
@@ -22,6 +55,12 @@ impl EmailStorage {
     /// # Returns
     /// A Result containing the EmailStorage or an error
     pub fn new(path: &Path) -> Result<Self> {
+        // Check for and remove stale lock files
+        // If this fails, we'll still try to open the database
+        if let Err(e) = Self::check_and_remove_stale_lock_files(path) {
+            warn!("Error checking for stale lock files: {}", e);
+        }
+        
         // Create the database
         let db = sled::open(path)?;
         
@@ -233,5 +272,16 @@ impl EmailStorage {
     pub fn close(&self) -> Result<()> {
         self.db.flush()?;
         Ok(())
+    }
+    
+    /// Utility function to manually clean up stale lock files.
+    ///
+    /// # Parameters
+    /// - `path`: Path to the storage directory
+    ///
+    /// # Returns
+    /// A Result indicating success or failure
+    pub fn cleanup_stale_lock_files(path: &Path) -> Result<()> {
+        Self::check_and_remove_stale_lock_files(path)
     }
 }

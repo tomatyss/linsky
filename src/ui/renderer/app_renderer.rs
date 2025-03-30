@@ -67,14 +67,12 @@ impl AppRenderer {
     /// # Returns
     /// A Result indicating success or failure
     fn render_accounts_view(&self, f: &mut Frame, state: &AppState, area: Rect) -> Result<()> {
-        // Get accounts
-        let accounts = state.accounts.iter().map(|account| {
-            let account_lock = account.blocking_lock();
-            account_lock.clone()
-        }).collect::<Vec<_>>();
+        // Use the accounts directly from the state without trying to lock them
+        // This avoids blocking operations in the UI rendering code
+        let account_summaries = state.account_summaries.clone();
         
         // Render accounts
-        views::render_accounts(f, area, &accounts, state.get_selected_account());
+        views::render_accounts(f, area, &account_summaries, state.get_selected_account());
         
         Ok(())
     }
@@ -89,17 +87,24 @@ impl AppRenderer {
     /// # Returns
     /// A Result indicating success or failure
     fn render_folders_view(&self, f: &mut Frame, state: &AppState, area: Rect) -> Result<()> {
-        // Get folders
+        // Use a default folder list if we can't get the account's folders
+        let default_folders = vec!["INBOX".to_string()];
+        
+        // Get folders from the selected account if available
         let folders = if let Some(index) = state.get_selected_account() {
             if index < state.accounts.len() {
-                let account = &state.accounts[index];
-                let account_lock = account.blocking_lock();
-                account_lock.folders.clone()
+                // Try to get a non-blocking lock on the account
+                if let Ok(account) = state.accounts[index].try_lock() {
+                    account.folders.clone()
+                } else {
+                    // If we can't get a lock, use the default folders
+                    default_folders
+                }
             } else {
-                vec!["INBOX".to_string()]
+                default_folders
             }
         } else {
-            vec!["INBOX".to_string()]
+            default_folders
         };
         
         // Render folders

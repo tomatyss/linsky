@@ -6,6 +6,8 @@
 mod email;
 mod account;
 mod attachment;
+mod account_summary;
 
 pub use email::*;
 pub use account::*;
+pub use account_summary::*;

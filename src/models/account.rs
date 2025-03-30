@@ -1,6 +1,7 @@
 //! Email account model for the Linksy email client.
 
 use crate::config::{EmailAccount, ServerConfig};
+use crate::models::AccountSummary;
 use serde::{Deserialize, Serialize};
 
 /// Represents the status of an email account connection.
@@ -147,5 +148,22 @@ impl Account {
     /// A reference to the SMTP server configuration
     pub fn get_smtp_config(&self) -> &ServerConfig {
         &self.config.smtp
+    }
+    
+    /// Creates an AccountSummary from this Account.
+    ///
+    /// # Returns
+    /// An AccountSummary instance
+    pub fn to_summary(&self) -> AccountSummary {
+        AccountSummary {
+            id: self.config.id.clone(),
+            name: self.config.name.clone(),
+            email: self.config.email.clone(),
+            imap_status: self.imap_status,
+            smtp_status: self.smtp_status,
+            pop3_status: self.pop3_status,
+            unread_count: self.unread_count,
+            total_count: self.total_count,
+        }
     }
 }

@@ -32,19 +32,19 @@ async fn main() -> Result<()> {
     let config_path = base_dir.join("config.json");
     let config_manager = config::ConfigManager::new(config_path.to_str().unwrap())?;
     
-    // Create storage
+    // Create a single storage instance
     let storage_path = base_dir.join("storage");
     let storage = storage::EmailStorage::new(&storage_path)?;
     
     // Create state
-    let app_state = state::AppState::new(config_manager, storage, base_dir);
+    let app_state = state::AppState::new(config_manager, storage.clone(), base_dir);
     let app_state = Arc::new(Mutex::new(app_state));
     
     // Create managers
     let account_manager = state::AccountManager::new();
     let account_manager = Arc::new(Mutex::new(account_manager));
     
-    let storage = storage::EmailStorage::new(&storage_path)?;
+    // Use a clone of the storage instance for the email manager
     let email_manager = state::EmailManager::new(storage);
     let email_manager = Arc::new(Mutex::new(email_manager));
     
@@ -88,12 +88,12 @@ async fn main() -> Result<()> {
         }
     }
     
-    // Disconnect clients
-    app_controller.disconnect_all_clients().await?;
+    // Shutdown the application
+    app_controller.shutdown().await?;
     
     // Restore terminal
     ui::restore_terminal(terminal)?;
     
-    info!("Linksy email client shutting down");
+    info!("Linksy email client shut down successfully");
     Ok(())
 }

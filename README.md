@@ -47,6 +47,20 @@ cargo build --release
 cargo run --release
 ```
 
+The project includes multiple binaries:
+- `linksy`: The main email client application (default)
+- `cleanup_locks`: Utility to clean up stale database lock files
+
+If you need to specify which binary to run:
+
+```bash
+# Run the main application
+cargo run --bin linksy --release
+
+# Run the cleanup utility
+cargo run --bin cleanup_locks
+```
+
 ### From Cargo
 
 ```bash
@@ -60,6 +74,30 @@ cargo install linksy
 ```bash
 linksy
 ```
+
+### Troubleshooting Database Lock Issues
+
+If you encounter an error like:
+
+```
+Error: IO error: could not acquire lock on "/Users/username/Library/Application Support/linksy/storage/db": Os { code: 35, kind: WouldBlock, message: "Resource temporarily unavailable" }
+```
+
+This usually means there's a stale lock file from a previous session. You can:
+
+1. Use the included cleanup utility:
+
+```bash
+cargo run --bin cleanup_locks
+```
+
+2. Or manually delete the lock file:
+
+```bash
+rm ~/.config/linksy/storage/db.lock
+```
+
+The application now automatically handles stale lock files on startup, but these methods can be useful if issues persist.
 
 ### Keyboard Shortcuts
 

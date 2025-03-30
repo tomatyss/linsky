@@ -311,4 +311,12 @@ impl EmailManager {
     pub fn update_email(&self, email: &Email) -> Result<()> {
         self.storage.update_email(email)
     }
+    
+    /// Closes the database storage.
+    ///
+    /// # Returns
+    /// A Result indicating success or failure
+    pub fn close_storage(&self) -> Result<()> {
+        self.storage.close()
+    }
 }

@@ -4,6 +4,7 @@ version = "0.1.0"
 edition = "2024"
 description = "A light and fast email client"
 authors = ["Linksy Developer"]
+default-run = "linksy"
 
 [dependencies]
 # Email protocols

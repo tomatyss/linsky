@@ -4,7 +4,7 @@
 
 pub mod account_config;
 
-use crate::models::{Account, Email};
+use crate::models::{AccountSummary, Email};
 use tui::{
     layout::{Constraint, Direction, Layout, Rect},
     style::{Color, Modifier, Style},
@@ -23,7 +23,7 @@ use tui::{
 pub fn render_accounts(
     f: &mut Frame,
     area: Rect,
-    accounts: &[Account],
+    accounts: &[AccountSummary],
     selected: Option<usize>,
 ) {
     let account_items: Vec<ListItem> = accounts.iter()

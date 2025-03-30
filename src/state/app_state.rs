@@ -1,7 +1,7 @@
 //! Application state management for the Linksy email client.
 
 use crate::config::ConfigManager;
-use crate::models::{Account, Email};
+use crate::models::{Account, AccountSummary, Email};
 use crate::storage::EmailStorage;
 use crate::ui::views::account_config::AccountFormState;
 use std::path::PathBuf;
@@ -36,6 +36,8 @@ pub struct AppState {
     pub storage: EmailStorage,
     /// Active accounts
     pub accounts: Vec<Arc<Mutex<Account>>>,
+    /// Account summaries for rendering (non-mutex-protected)
+    pub account_summaries: Vec<AccountSummary>,
     /// Currently selected account index
     pub selected_account: Option<usize>,
     /// Currently selected folder
@@ -75,6 +77,7 @@ impl AppState {
             config_manager,
             storage,
             accounts: Vec::new(),
+            account_summaries: Vec::new(),
             selected_account: None,
             selected_folder: "INBOX".to_string(),
             selected_email: None,
@@ -86,6 +89,22 @@ impl AppState {
             base_dir,
             email_scroll_offset: 0,
             account_form_state: None,
+        }
+    }
+    
+    /// Updates account summaries from the accounts.
+    /// This should be called whenever accounts are updated.
+    pub fn update_account_summaries(&mut self) {
+        // Clear existing summaries
+        self.account_summaries.clear();
+        
+        // Create new summaries from accounts
+        for account_mutex in &self.accounts {
+            // Try to get a non-blocking lock on the account
+            if let Ok(account) = account_mutex.try_lock() {
+                // Create a summary and add it to the list
+                self.account_summaries.push(account.to_summary());
+            }
         }
     }
     
